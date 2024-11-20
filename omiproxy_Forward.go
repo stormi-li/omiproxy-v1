@@ -18,12 +18,18 @@ func pathRequestResolution(r *http.Request, router *router) {
 	r.URL.Path = strings.TrimPrefix(r.URL.Path, "/"+serverName)
 	host := router.getAddress(serverName)
 	r.URL.Host = host
+	if host == "" {
+		log.Println("未找到微服务:", serverName)
+	}
 }
 
 func domainNameResolution(r *http.Request, router *router) {
 	domainName := strings.Split(r.Host, ":")[0]
 	host := router.getAddress(domainName)
 	r.URL.Host = host
+	if host == "" {
+		log.Println("未找到 Web 服务:", domainName)
+	}
 }
 
 func isWebSocketRequest(r *http.Request) bool {
