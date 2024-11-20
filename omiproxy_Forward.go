@@ -16,24 +16,22 @@ import (
 
 func pathRequestResolution(r *http.Request, router *router) error {
 	serverName := strings.Split(r.URL.Path, "/")[1]
+	if !router.Has(serverName) {
+		return fmt.Errorf("未找到微服务: %s", serverName)
+	}
 	r.URL.Path = strings.TrimPrefix(r.URL.Path, "/"+serverName)
 	host := router.getAddress(serverName)
 	r.URL.Host = host
-
-	if host == "" {
-		return fmt.Errorf("未找到微服务: %s", serverName)
-	}
 	return nil
 }
 
 func domainNameResolution(r *http.Request, router *router) error {
 	domainName := strings.Split(r.Host, ":")[0]
-	host := router.getAddress(domainName)
-	r.URL.Host = host
-
-	if host == "" {
+	if !router.Has(domainName){
 		return fmt.Errorf("未找到 Web 服务: %s", domainName)
 	}
+	host := router.getAddress(domainName)
+	r.URL.Host = host
 	return nil
 }
 
