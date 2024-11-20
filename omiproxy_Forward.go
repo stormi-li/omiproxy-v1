@@ -2,6 +2,7 @@ package omiproxy
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -13,23 +14,27 @@ import (
 	"github.com/stormi-li/omicafe-v1"
 )
 
-func pathRequestResolution(r *http.Request, router *router) {
+func pathRequestResolution(r *http.Request, router *router) error {
 	serverName := strings.Split(r.URL.Path, "/")[1]
 	r.URL.Path = strings.TrimPrefix(r.URL.Path, "/"+serverName)
 	host := router.getAddress(serverName)
 	r.URL.Host = host
+
 	if host == "" {
-		log.Println("未找到微服务:", serverName)
+		return fmt.Errorf("未找到微服务: %s", serverName)
 	}
+	return nil
 }
 
-func domainNameResolution(r *http.Request, router *router) {
+func domainNameResolution(r *http.Request, router *router) error {
 	domainName := strings.Split(r.Host, ":")[0]
 	host := router.getAddress(domainName)
 	r.URL.Host = host
+
 	if host == "" {
-		log.Println("未找到 Web 服务:", domainName)
+		return fmt.Errorf("未找到 Web 服务: %s", domainName)
 	}
+	return nil
 }
 
 func isWebSocketRequest(r *http.Request) bool {

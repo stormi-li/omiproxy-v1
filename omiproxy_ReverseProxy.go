@@ -9,21 +9,29 @@ import (
 )
 
 type ReverseProxy struct {
-	router      *router
-	webRegister *omiserd.Register
-	serverName  string
-	address     string
-	cache       *omicafe.FileCache
+	router       *router
+	webRegister  *omiserd.Register
+	serverName   string
+	address      string
+	cache        *omicafe.FileCache
+	failCallback func(w http.ResponseWriter, r *http.Request)
 }
 
 func (proxyServer *ReverseProxy) reverseProxyHandleFunc(w http.ResponseWriter, r *http.Request) {
-	pathRequestResolution(r, proxyServer.router)
+	if pathRequestResolution(r, proxyServer.router) != nil {
+		proxyServer.failCallback(w, r)
+		return
+	}
 	httpForward(w, r, proxyServer.cache)
 	websocketForward(w, r)
 }
 
 func (proxyServer *ReverseProxy) SetCache(cacheDir string, maxSize int) {
 	proxyServer.cache = omicafe.NewFileCache(cacheDir, maxSize)
+}
+
+func (proxyServer *ReverseProxy) SetFailCallback(failCallback func(w http.ResponseWriter, r *http.Request)) {
+	proxyServer.failCallback = failCallback
 }
 
 func (proxyServer *ReverseProxy) Start(weight int) {
