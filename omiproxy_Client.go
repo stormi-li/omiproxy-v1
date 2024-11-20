@@ -17,7 +17,7 @@ func (c *Client) NewDNSProxy(serverName, address string) *DNSProxy {
 		webRegister:  omiserd.NewClient(c.opts, omiserd.Web).NewRegister(serverName, address),
 		serverName:   serverName,
 		address:      address,
-		failCallback: func(w http.ResponseWriter, r *http.Request) { return },
+		failCallback: func(w http.ResponseWriter, r *http.Request) {},
 	}
 }
 
@@ -27,6 +27,6 @@ func (c *Client) NewReverseProxy(serverName, address string) *ReverseProxy {
 		webRegister:  omiserd.NewClient(c.opts, omiserd.Web).NewRegister(serverName, address),
 		serverName:   serverName,
 		address:      address,
-		failCallback: func(w http.ResponseWriter, r *http.Request) { return },
+		failCallback: func(w http.ResponseWriter, r *http.Request) {},
 	}
 }
