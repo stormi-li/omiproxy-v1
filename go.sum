@@ -10,6 +10,10 @@ github.com/gorilla/websocket v1.5.3 h1:saDtZ6Pbx/0u+bgYQ3q96pZgCzfhKXGPqt7kZ72aN
 github.com/gorilla/websocket v1.5.3/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/stormi-li/omicafe-v1 v1.0.0 h1:TfhmOcR8h0GeweJ7WpXWilrJhOVkXh6kRqBAVIEQYZs=
 github.com/stormi-li/omicafe-v1 v1.0.0/go.mod h1:vzdqkCmzyshCCFa/WIWcGW26CkTgXP3t8xKeAfwQqpY=
+github.com/stormi-li/omicafe-v1 v1.0.1 h1:2WGKZK0cGiwD77JWMOHA5pxpdy+Xrs6pj4dzyNBEBmI=
+github.com/stormi-li/omicafe-v1 v1.0.1/go.mod h1:vzdqkCmzyshCCFa/WIWcGW26CkTgXP3t8xKeAfwQqpY=
+github.com/stormi-li/omicafe-v1 v1.0.2 h1:J3x3k2djH6cwUN8RlBjwAr/Z1V0bjxGuEmDW7DotBd4=
+github.com/stormi-li/omicafe-v1 v1.0.2/go.mod h1:vzdqkCmzyshCCFa/WIWcGW26CkTgXP3t8xKeAfwQqpY=
 github.com/stormi-li/omipc-v1 v1.0.3 h1:FPrfEsLxxYg3dokyTkBgemOdcHyWhiOcVPrdncKvV1I=
 github.com/stormi-li/omipc-v1 v1.0.3/go.mod h1:dTsaaQZNQy7CSke9RwUwuInGlFZ2UU7HEYIHsRSiaH8=
 github.com/stormi-li/omiserd-v1 v1.0.0 h1:ki32I6M1+KN/wYsgsca+VcjaCLSrbjI07byZEyMxz9Q=

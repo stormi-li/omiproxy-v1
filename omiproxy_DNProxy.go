@@ -8,7 +8,7 @@ import (
 	"github.com/stormi-li/omiserd-v1"
 )
 
-type DNSProxy struct {
+type DomainNameProxy struct {
 	router       *router
 	webRegister  *omiserd.Register
 	serverName   string
@@ -17,7 +17,7 @@ type DNSProxy struct {
 	failCallback func(w http.ResponseWriter, r *http.Request)
 }
 
-func (proxyServer *DNSProxy) dnsProxyHandleFunc(w http.ResponseWriter, r *http.Request) {
+func (proxyServer *DomainNameProxy) dnsProxyHandleFunc(w http.ResponseWriter, r *http.Request) {
 	if domainNameResolution(r, proxyServer.router) != nil {
 		proxyServer.failCallback(w, r)
 		return
@@ -26,18 +26,20 @@ func (proxyServer *DNSProxy) dnsProxyHandleFunc(w http.ResponseWriter, r *http.R
 	websocketForward(w, r)
 }
 
-func (proxyServer *DNSProxy) SetCache(cacheDir string, maxSize int) {
+func (proxyServer *DomainNameProxy) SetCache(cacheDir string, maxSize int) {
 	proxyServer.cache = omicafe.NewFileCache(cacheDir, maxSize)
 }
 
-func (proxyServer *DNSProxy) SetFailCallback(failCallback func(w http.ResponseWriter, r *http.Request)) {
+func (proxyServer *DomainNameProxy) SetFailCallback(failCallback func(w http.ResponseWriter, r *http.Request)) {
 	proxyServer.failCallback = failCallback
 }
 
-func (proxyServer *DNSProxy) Start(proxyProtocal ProxyProtocal, cert, key string) {
+func (proxyServer *DomainNameProxy) Start(proxyProtocal ProxyProtocal, cert, key string) {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		proxyServer.dnsProxyHandleFunc(w, r)
 	})
+	registerHandler(proxyServer.webRegister, proxyServer.cache)
+	proxyServer.webRegister.Data["proxy_type"] = "domain_name_proxy"
 	proxyServer.webRegister.RegisterAndListen(1, func(port string) {
 		if proxyProtocal == Http {
 			log.Println("omi web server: " + proxyServer.serverName + " is running on http://" + proxyServer.address)

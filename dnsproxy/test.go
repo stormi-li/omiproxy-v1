@@ -10,6 +10,6 @@ var password = "12982397StrongPassw0rd"
 
 func main() {
 	c := omiproxy.NewClient(&redis.Options{Addr: redisAddr, Password: password})
-	proxy := c.NewDNSProxy("http8080", "118.25.196.166:8080")
+	proxy := c.NewDomainNameProxy("http8000", "118.25.196.166:8000")
 	proxy.Start(omiproxy.Http, "certs/stormili.crt", "certs/stormili.key")
 }

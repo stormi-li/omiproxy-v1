@@ -38,6 +38,8 @@ func (proxyServer *ReverseProxy) Start(weight int) {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		proxyServer.reverseProxyHandleFunc(w, r)
 	})
+	registerHandler(proxyServer.webRegister, proxyServer.cache)
+	proxyServer.webRegister.Data["proxy_type"] = "reverse_proxy"
 	proxyServer.webRegister.RegisterAndListen(1, func(port string) {
 		log.Println("omi web server: " + proxyServer.serverName + " is running on http://" + proxyServer.address)
 		err := http.ListenAndServe(port, nil)
