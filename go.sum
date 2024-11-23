@@ -18,8 +18,8 @@ github.com/stormi-li/omicafe-v1 v1.0.5 h1:BHm9f60UBKR0qaFj7fIXetj1KXl8Ua++PShE65
 github.com/stormi-li/omicafe-v1 v1.0.5/go.mod h1:vzdqkCmzyshCCFa/WIWcGW26CkTgXP3t8xKeAfwQqpY=
 github.com/stormi-li/omipc-v1 v1.0.6 h1:J8gQkpXTKqjTJOyNLi+3/qJ36Z3lAH5fm4edF+1n2pI=
 github.com/stormi-li/omipc-v1 v1.0.6/go.mod h1:ZAp6w8bM/PlfvetZH1OnT79baGIir/2jlHtmKYTHdpE=
-github.com/stormi-li/omiserd-v1 v1.0.2 h1:C5VvPz9yGoNQOI9V1v+AL9VHqjo9li9rmTGifXIMSbE=
-github.com/stormi-li/omiserd-v1 v1.0.2/go.mod h1:X2uGc+Z0CD3HIeYeFdiDsDRfGZvpGahSOGsEZsaAY2Q=
+github.com/stormi-li/omiserd-v1 v1.0.4 h1:aaoVf4AjA5BpkowbR2KrSlx1AmaUwumYy5ryNCXMLiA=
+github.com/stormi-li/omiserd-v1 v1.0.4/go.mod h1:X2uGc+Z0CD3HIeYeFdiDsDRfGZvpGahSOGsEZsaAY2Q=
 golang.org/x/net v0.0.0-20210428140749-89ef3d95e781 h1:DzZ89McO9/gWPsQXS/FVKAlG02ZjaQ6AlZRBimEYOd0=
 golang.org/x/net v0.0.0-20210428140749-89ef3d95e781/go.mod h1:OJAsFXCWl8Ukc7SiCT/9KSuxbyM7479/AVlXFRxuMCk=
 golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e h1:fLOSk5Q00efkSvAm+4xcoXD+RRmLmmulPn5I3Y9F2EM=
