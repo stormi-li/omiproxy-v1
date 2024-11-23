@@ -20,26 +20,6 @@ func (c *Client) NewProxy(serverName, address string, mode ProxyMode) *OmiProxy 
 	return proxy
 }
 
-// func (c *Client) NewDomainNameProxy(serverName, address string) *DomainNameProxy {
-// 	return &DomainNameProxy{
-// 		router:       newRouter(c.opts, omiserd.Web),
-// 		webRegister:  omiserd.NewClient(c.opts, omiserd.Web).NewRegister(serverName, address),
-// 		serverName:   serverName,
-// 		address:      address,
-// 		failCallback: func(w http.ResponseWriter, r *http.Request) {},
-// 	}
-// }
-
-// func (c *Client) NewReverseProxy(serverName, address string) *ReverseProxy {
-// 	return &ReverseProxy{
-// 		router:       newRouter(c.opts, omiserd.Server),
-// 		webRegister:  omiserd.NewClient(c.opts, omiserd.Web).NewRegister(serverName, address),
-// 		serverName:   serverName,
-// 		address:      address,
-// 		failCallback: func(w http.ResponseWriter, r *http.Request) {},
-// 	}
-// }
-
 func cacheInfoHandler(register *register.Register, cache *omicafe.FileCache) {
 	if cache == nil {
 		register.Data["cache_state"] = "closed"
