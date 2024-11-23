@@ -30,7 +30,6 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	r.URL.Host = host
-
 	if isWebSocketRequest(r) {
 		p.webSocketProxy.Forward(w, r)
 	} else {
