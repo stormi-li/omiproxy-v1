@@ -8,15 +8,17 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/stormi-li/omiserd-v1"
+	omiconst "github.com/stormi-li/omiserd-v1/omiserd_const"
+	discover "github.com/stormi-li/omiserd-v1/omiserd_discover"
 )
 
 type router struct {
-	discover   *omiserd.Discover
+	discover   *discover.Discover
 	addressMap map[string][]string
 	mutex      sync.Mutex
 }
 
-func newRouter(opts *redis.Options, nodeType omiserd.NodeType) *router {
+func newRouter(opts *redis.Options, nodeType omiconst.NodeType) *router {
 	router := router{
 		discover:   omiserd.NewClient(opts, nodeType).NewDiscover(),
 		addressMap: map[string][]string{},
@@ -32,10 +34,11 @@ func newRouter(opts *redis.Options, nodeType omiserd.NodeType) *router {
 }
 
 func (router *router) refresh() {
-	nodeMap := router.discover.DiscoverAllServers()
+	nodeMap := router.discover.GetAll()
 	addrMap := map[string][]string{}
 	for name, addrs := range nodeMap {
-		for addr, data := range addrs {
+		for _, addr := range addrs {
+			data := router.discover.GetData(name, addr)
 			weight, _ := strconv.Atoi(data["weight"])
 			for i := 0; i < weight; i++ {
 				addrMap[name] = append(addrMap[name], addr)
