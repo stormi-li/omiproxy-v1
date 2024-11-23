@@ -12,6 +12,8 @@ import (
 	discover "github.com/stormi-li/omiserd-v1/omiserd_discover"
 )
 
+const router_refresh_interval = 2 * time.Second
+
 type router struct {
 	discover   *discover.Discover
 	addressMap map[string][]string
