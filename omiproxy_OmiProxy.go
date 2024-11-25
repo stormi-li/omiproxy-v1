@@ -10,10 +10,14 @@ import (
 	"github.com/stormi-li/omiserd-v1"
 )
 
+const Command_open_cache = "open_cache"
+const Command_update_cache_size = "update_cache_size"
+const Default_cache_size = 100 * 1024 * 1024
+
 type ProxyMode int
 
-var DomainMode ProxyMode = 1
-var PathMode ProxyMode = 2
+const DomainMode ProxyMode = 1
+const PathMode ProxyMode = 2
 
 func (Mode ProxyMode) String() string {
 	switch Mode {
@@ -28,8 +32,8 @@ func (Mode ProxyMode) String() string {
 
 type ProxyProtocal int
 
-var Http ProxyProtocal = 1
-var Https ProxyProtocal = 2
+const Http ProxyProtocal = 1
+const Https ProxyProtocal = 2
 
 // ProxyProtocal 枚举类型的字符串表示
 func (proto ProxyProtocal) String() string {
@@ -61,7 +65,7 @@ func newOmiProxy(opts *redis.Options, serverName, address string, mode ProxyMode
 	} else {
 		proxy = NewProxy(NewPathResolver(opts), cache)
 	}
-	omiProxy := OmiProxy{
+	omiProxy := &OmiProxy{
 		proxy:        proxy,
 		Register:     omiserd.NewClient(opts, omiserd.Web).NewRegister(serverName, address),
 		serverName:   serverName,
@@ -122,7 +126,19 @@ func newOmiProxy(opts *redis.Options, serverName, address string, mode ProxyMode
 	omiProxy.Register.AddRegisterHandleFunc("proxy_mode", func() string {
 		return mode.String()
 	})
-	return &omiProxy
+	omiProxy.Register.AddMessageHandleFunc(Command_open_cache, func(message string) {
+		if size, err := strconv.Atoi(message); err == nil {
+			omiProxy.cache = omicafe.NewFileCache("cache", size)
+		} else {
+			omiProxy.cache = omicafe.NewFileCache("cache", Default_cache_size)
+		}
+	})
+	omiProxy.Register.AddMessageHandleFunc(Command_update_cache_size, func(message string) {
+		if size, err := strconv.Atoi(message); err == nil && omiProxy.cache != nil {
+			omiProxy.cache.MaxSize = size
+		}
+	})
+	return omiProxy
 }
 
 // 处理代理请求
