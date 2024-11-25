@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/go-redis/redis/v8"
-	omiconst "github.com/stormi-li/omiserd-v1/omiserd_const"
+	"github.com/stormi-li/omiserd-v1"
 )
 
 // 定义接口用于服务地址解析
@@ -43,12 +43,12 @@ func (dr *DomainResolver) Resolve(r *http.Request) (string, error) {
 
 func NewPathResolver(opts *redis.Options) *PathResolver {
 	return &PathResolver{
-		router: newRouter(opts, omiconst.Server),
+		router: newRouter(opts, omiserd.Server),
 	}
 }
 
 func NewDomainResolver(opts *redis.Options) *DomainResolver {
 	return &DomainResolver{
-		router: newRouter(opts, omiconst.Web),
+		router: newRouter(opts, omiserd.Web),
 	}
 }

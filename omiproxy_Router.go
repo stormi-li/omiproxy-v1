@@ -8,19 +8,17 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/stormi-li/omiserd-v1"
-	omiconst "github.com/stormi-li/omiserd-v1/omiserd_const"
-	discover "github.com/stormi-li/omiserd-v1/omiserd_discover"
 )
 
 const router_refresh_interval = 2 * time.Second
 
 type router struct {
-	discover   *discover.Discover
+	discover   *omiserd.Discover
 	addressMap map[string][]string
 	mutex      sync.Mutex
 }
 
-func newRouter(opts *redis.Options, nodeType omiconst.NodeType) *router {
+func newRouter(opts *redis.Options, nodeType omiserd.NodeType) *router {
 	router := router{
 		discover:   omiserd.NewClient(opts, nodeType).NewDiscover(),
 		addressMap: map[string][]string{},
