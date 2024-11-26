@@ -12,5 +12,5 @@ func main() {
 	c := omiproxy.NewClient(&redis.Options{Addr: redisAddr, Password: password})
 	proxy := c.NewProxy("http8000", "118.25.196.166:8000", omiproxy.PathMode)
 	proxy.SetCache("cache", 100*1024*1024)
-	proxy.Start(omiproxy.Http, 1, "", "")
+	proxy.Start(omiproxy.Http, 1, nil)
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/stormi-li/omicafe-v1"
+	"github.com/stormi-li/omicert-v1"
 	"github.com/stormi-li/omiserd-v1"
 )
 
@@ -163,7 +164,7 @@ func (omiProxy *OmiProxy) SetFailCallback(failCallback func(w http.ResponseWrite
 }
 
 // 启动代理服务
-func (omiProxy *OmiProxy) Start(proxyProtocal ProxyProtocal, weight int, cert, key string) {
+func (omiProxy *OmiProxy) Start(proxyProtocal ProxyProtocal, weight int, crediential *omicert.Credential) {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		omiProxy.handleRequest(w, r)
 	})
@@ -177,15 +178,13 @@ func (omiProxy *OmiProxy) Start(proxyProtocal ProxyProtocal, weight int, cert, k
 		address := proxyProtocal.String() + "://" + omiProxy.address
 		log.Printf("omi web server: %s is running on %s", omiProxy.serverName, address)
 
-		var err error
 		if proxyProtocal == Http {
-			err = http.ListenAndServe(port, nil)
+			err := http.ListenAndServe(port, nil)
+			if err != nil {
+				log.Fatalf("Failed to start server: %v", err)
+			}
 		} else if proxyProtocal == Https {
-			err = http.ListenAndServeTLS(port, cert, key, nil)
-		}
-
-		if err != nil {
-			log.Fatalf("Failed to start server: %v", err)
+			omicert.ListenAndServeTLS(port, crediential)
 		}
 	})
 }
