@@ -44,9 +44,11 @@ func NewHTTPProxy() *HTTPProxy {
 		transport: http.DefaultTransport,
 	}
 }
+
 func (p *HTTPProxy) SetCache(cache *omicafe.FileCache) {
 	p.cache = cache
 }
+
 func (p *HTTPProxy) Forward(w http.ResponseWriter, r *http.Request) {
 	if p.cache != nil && r.Method == "GET" {
 		if data, _ := p.cache.Get(r.URL.String()); len(data) != 0 {
