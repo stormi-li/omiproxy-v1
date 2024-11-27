@@ -1,17 +1,34 @@
 package omiproxy
 
 import (
+	"crypto/tls"
 	"log"
 	"net/http"
 
 	"github.com/gorilla/websocket"
+	"github.com/stormi-li/omiresolver-v1"
 )
 
 // WebSocket代理
-type WebSocketProxy struct{}
+type WebSocketProxy struct {
+	Resolver *omiresolver.Resolver
+	Dialer   websocket.Dialer
+}
+
+func NewWebSocketProxy(resolver *omiresolver.Resolver, insecureSkipVerify bool) *WebSocketProxy {
+	return &WebSocketProxy{
+		Resolver: resolver,
+		Dialer: websocket.Dialer{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: insecureSkipVerify, // 跳过证书验证
+			},
+		},
+	}
+}
+
+var upgrader = websocket.Upgrader{}
 
 func (wp *WebSocketProxy) Forward(w http.ResponseWriter, r *http.Request) {
-	upgrader := websocket.Upgrader{}
 	clientConn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Printf("WebSocket升级失败: %v", err)
@@ -19,8 +36,17 @@ func (wp *WebSocketProxy) Forward(w http.ResponseWriter, r *http.Request) {
 	}
 	defer clientConn.Close()
 
-	r.URL.Scheme = "ws"
-	targetConn, _, err := websocket.DefaultDialer.Dial(r.URL.String(), nil)
+	proxyURL, err := wp.Resolver.Resolve(*r.URL)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	if proxyURL.Scheme == "https" {
+		proxyURL.Scheme = "wss"
+	} else {
+		proxyURL.Scheme = "ws"
+	}
+	targetConn, _, err := wp.Dialer.Dial(proxyURL.String(), r.Header)
 	if err != nil {
 		log.Printf("无法连接到WebSocket服务器: %v", err)
 		return

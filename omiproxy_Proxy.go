@@ -4,32 +4,29 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/stormi-li/omicafe-v1"
+	"github.com/stormi-li/omiresolver-v1"
+	"github.com/stormi-li/omiserd-v1"
 )
 
 // 主代理器
 type Proxy struct {
-	resolver       Resolver
 	httpProxy      *HTTPProxy
 	webSocketProxy *WebSocketProxy
 }
 
-func NewProxy(resolver Resolver, cache *omicafe.FileCache) *Proxy {
+func NewProxy(opts *redis.Options, nodeType omiserd.NodeType, cache *omicafe.FileCache, insecureSkipVerify bool) *Proxy {
+	resolver := omiresolver.NewResolver(opts, nodeType)
 	return &Proxy{
-		resolver:       resolver,
-		httpProxy:      NewHTTPProxy(),
-		webSocketProxy: &WebSocketProxy{},
+		httpProxy:      NewHTTPProxy(resolver, cache, insecureSkipVerify),
+		webSocketProxy: NewWebSocketProxy(resolver, insecureSkipVerify),
 	}
 }
 func (p *Proxy) SetCache(cache *omicafe.FileCache) {
 	p.httpProxy.SetCache(cache)
 }
-func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) error {
-	host, err := p.resolver.Resolve(r)
-	if err != nil {
-		return err
-	}
-	r.URL.Host = host
+func (p *Proxy) Forward(w http.ResponseWriter, r *http.Request) error {
 	if isWebSocketRequest(r) {
 		p.webSocketProxy.Forward(w, r)
 	} else {

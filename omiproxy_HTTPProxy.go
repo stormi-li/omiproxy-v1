@@ -2,12 +2,15 @@ package omiproxy
 
 import (
 	"bytes"
+	"crypto/tls"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 
 	"github.com/stormi-li/omicafe-v1"
+	"github.com/stormi-li/omiresolver-v1"
 )
 
 // 捕获响应内容的 RoundTripper
@@ -36,12 +39,19 @@ func (c *CaptureResponseRoundTripper) RoundTrip(r *http.Request) (*http.Response
 // HTTP代理
 type HTTPProxy struct {
 	cache     *omicafe.FileCache
-	transport http.RoundTripper
+	Transport http.RoundTripper
+	Resolver  *omiresolver.Resolver
 }
 
-func NewHTTPProxy() *HTTPProxy {
+func NewHTTPProxy(resolver *omiresolver.Resolver, cache *omicafe.FileCache, insecureSkipVerify bool) *HTTPProxy {
 	return &HTTPProxy{
-		transport: http.DefaultTransport,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: insecureSkipVerify, // 禁用证书验证
+			},
+		},
+		Resolver: resolver,
+		cache:    cache,
 	}
 }
 
@@ -56,11 +66,24 @@ func (p *HTTPProxy) Forward(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	proxyURL := &url.URL{
-		Scheme: "http",
-		Host:   r.URL.Host,
+	r.URL.Host = r.Host
+	targetURL, err := p.Resolver.Resolve(*r.URL)
+	if err != nil {
+		log.Println(err)
+		return
 	}
+
+	if targetURL.Scheme == "" {
+		targetURL.Scheme = "http"
+	}
+
+	proxyURL := &url.URL{
+		Scheme: targetURL.Scheme,
+		Host:   targetURL.Host,
+	}
+
 	proxy := httputil.NewSingleHostReverseProxy(proxyURL)
-	proxy.Transport = &CaptureResponseRoundTripper{Transport: p.transport, cache: p.cache, url: r.URL}
+	r.URL.Path = targetURL.Path
+	proxy.Transport = &CaptureResponseRoundTripper{Transport: p.Transport, cache: p.cache, url: r.URL}
 	proxy.ServeHTTP(w, r)
 }

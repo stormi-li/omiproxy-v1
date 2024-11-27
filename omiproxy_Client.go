@@ -8,7 +8,7 @@ type Client struct {
 	opts *redis.Options
 }
 
-func (c *Client) NewProxy(serverName, address string, mode ProxyMode) *OmiProxy {
-	proxy := newOmiProxy(c.opts, serverName, address, mode)
+func (c *Client) NewProxy(serverName, address string) *OmiProxy {
+	proxy := newOmiProxy(c.opts, serverName, address)
 	return proxy
 }
