@@ -15,23 +15,6 @@ const Command_open_cache = "open_cache"
 const Command_update_cache_size = "update_cache_size"
 const Default_cache_size = 100 * 1024 * 1024
 
-type Protocal int
-
-const Http Protocal = 1
-const Https Protocal = 2
-
-// ProxyProtocal 枚举类型的字符串表示
-func (proto Protocal) String() string {
-	switch proto {
-	case Http:
-		return "http"
-	case Https:
-		return "https"
-	default:
-		return "unknown"
-	}
-}
-
 type OmiProxy struct {
 	Options            *redis.Options
 	proxy              *Proxy
@@ -39,19 +22,23 @@ type OmiProxy struct {
 	serverName         string
 	address            string
 	cache              *omicafe.FileCache
-	failCallback       func(w http.ResponseWriter, r *http.Request)
 	InsecureSkipVerify bool
+	BeforeCallback     []func(w http.ResponseWriter, r *http.Request, handFuncResponse HandleFuncResponse) string
+	AfterCallback      []func(w http.ResponseWriter, r *http.Request, handFuncResponse HandleFuncResponse) string
+	FailCallback       []func(w http.ResponseWriter, r *http.Request, handFuncResponse HandleFuncResponse) string
 }
 
 func newOmiProxy(opts *redis.Options, serverName, address string) *OmiProxy {
 	var cache *omicafe.FileCache
 	omiProxy := &OmiProxy{
-		Options:      opts,
-		Register:     omiserd.NewClient(opts, omiserd.Web).NewRegister(serverName, address),
-		serverName:   serverName,
-		address:      address,
-		cache:        cache,
-		failCallback: func(w http.ResponseWriter, r *http.Request) {},
+		Options:        opts,
+		Register:       omiserd.NewClient(opts, omiserd.Web).NewRegister(serverName, address),
+		serverName:     serverName,
+		address:        address,
+		cache:          cache,
+		BeforeCallback: []func(w http.ResponseWriter, r *http.Request, handFuncResponse HandleFuncResponse) string{},
+		AfterCallback:  []func(w http.ResponseWriter, r *http.Request, handFuncResponse HandleFuncResponse) string{},
+		FailCallback:   []func(w http.ResponseWriter, r *http.Request, handFuncResponse HandleFuncResponse) string{},
 	}
 	omiProxy.Register.AddRegisterHandleFunc("cache_state", func() string {
 		if omiProxy.cache == nil {
@@ -117,53 +104,88 @@ func newOmiProxy(opts *redis.Options, serverName, address string) *OmiProxy {
 	return omiProxy
 }
 
-// 处理代理请求
-func (omiProxy *OmiProxy) handleRequest(w http.ResponseWriter, r *http.Request) {
-	err := omiProxy.proxy.Forward(w, r)
-	// 如果解析失败，调用失败回调
-	if err != nil {
-		omiProxy.failCallback(w, r)
-		return
-	}
-}
-
 // 设置缓存
 func (omiProxy *OmiProxy) SetCache(cacheDir string, maxSize int) {
 	omiProxy.cache = omicafe.NewFileCache(cacheDir, maxSize)
 }
 
-// 设置失败回调
-func (omiProxy *OmiProxy) SetFailCallback(failCallback func(w http.ResponseWriter, r *http.Request)) {
-	omiProxy.failCallback = failCallback
+type HandleFuncResponse struct {
+	Continue string
+	Break    string
+}
+
+func (omiProxy *OmiProxy) AddBeforeCallback(callback func(w http.ResponseWriter, r *http.Request, handFuncResponse HandleFuncResponse) string) {
+	omiProxy.BeforeCallback = append(omiProxy.BeforeCallback, callback)
+}
+
+func (omiProxy *OmiProxy) AddAfterCallback(callback func(w http.ResponseWriter, r *http.Request, handFuncResponse HandleFuncResponse) string) {
+	omiProxy.AfterCallback = append(omiProxy.AfterCallback, callback)
+}
+
+func (omiProxy *OmiProxy) AddForwardFailCallback(callback func(w http.ResponseWriter, r *http.Request, handFuncResponse HandleFuncResponse) string) {
+	omiProxy.AfterCallback = append(omiProxy.AfterCallback, callback)
+}
+
+func (omiProxy *OmiProxy) SetCORS() {
+	omiProxy.AddBeforeCallback(func(w http.ResponseWriter, r *http.Request, handFuncResponse HandleFuncResponse) string {
+		if r.Method == http.MethodOptions {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.WriteHeader(http.StatusOK)
+			return handFuncResponse.Break
+		}
+		return handFuncResponse.Continue
+	})
 }
 
 // 启动代理服务
 func (omiProxy *OmiProxy) Start(weight int, crediential *omicert.Credential) {
 	omiProxy.proxy = NewProxy(omiProxy.Options, omiserd.Web, omiProxy.cache, omiProxy.InsecureSkipVerify)
-
+	handleFuncResponse := HandleFuncResponse{
+		Continue: "Continue",
+		Break:    "Break",
+	}
+	
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		omiProxy.handleRequest(w, r)
+		for _, callback := range omiProxy.BeforeCallback {
+			if callback(w, r, handleFuncResponse) == handleFuncResponse.Break {
+				return
+			}
+		}
+		err := omiProxy.proxy.Forward(w, r)
+		// 如果解析失败，调用失败回调
+		if err != nil {
+			for _, callback := range omiProxy.FailCallback {
+				if callback(w, r, handleFuncResponse) == handleFuncResponse.Break {
+					return
+				}
+			}
+		}
+		for _, callback := range omiProxy.AfterCallback {
+			if callback(w, r, handleFuncResponse) == handleFuncResponse.Break {
+				return
+			}
+		}
 	})
 
-	protocal := Http
+	protocal := "http"
 	if crediential != nil {
-		protocal = Https
+		protocal = "https"
 	}
 
 	omiProxy.Register.AddRegisterHandleFunc("protocal", func() string {
-		return protocal.String()
+		return protocal
 	})
 
 	// 开始监听
 	omiProxy.Register.RegisterAndServe(weight, func(port string) {
-		address := protocal.String() + "://" + omiProxy.address
+		address := protocal + "://" + omiProxy.address
 		log.Printf("omi web server: %s is running on %s", omiProxy.serverName, address)
-		if protocal == Http {
+		if protocal == "http" {
 			err := http.ListenAndServe(port, nil)
 			if err != nil {
 				log.Fatalf("Failed to start server: %v", err)
 			}
-		} else if protocal == Https {
+		} else if protocal == "https" {
 			omicert.ListenAndServeTLS(port, crediential)
 		}
 	})

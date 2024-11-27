@@ -17,8 +17,9 @@ func main() {
 	proxy := c.NewProxy("http8000", "118.25.196.166:8000")
 	// proxy.SetCache("cache", 100*1024*1024)
 	// &omicert.Credential{CertFile: "../../certs/stormili.crt", KeyFile: "../../certs/stormili.key"}
-	proxy.SetFailCallback(func(w http.ResponseWriter, r *http.Request) {
+	proxy.AddForwardFailCallback(func(w http.ResponseWriter, r *http.Request, handFuncResponse omiproxy.HandleFuncResponse) string {
 		fmt.Fprintf(w, "hello")
+		return handFuncResponse.Continue
 	})
 	proxy.Start(1, &omicert.Credential{CertFile: "../../certs/stormili.crt", KeyFile: "../../certs/stormili.key"})
 }
