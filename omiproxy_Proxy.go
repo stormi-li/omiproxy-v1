@@ -28,11 +28,10 @@ func (p *Proxy) SetCache(cache *omicafe.FileCache) {
 }
 func (p *Proxy) Forward(w http.ResponseWriter, r *http.Request) error {
 	if isWebSocketRequest(r) {
-		p.webSocketProxy.Forward(w, r)
+		return p.webSocketProxy.Forward(w, r)
 	} else {
-		p.httpProxy.Forward(w, r)
+		return p.httpProxy.Forward(w, r)
 	}
-	return nil
 }
 
 // 判断是否为 WebSocket 请求

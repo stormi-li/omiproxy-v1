@@ -2,7 +2,7 @@ package omiproxy
 
 import (
 	"crypto/tls"
-	"log"
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/websocket"
@@ -28,18 +28,16 @@ func NewWebSocketProxy(resolver *omiresolver.Resolver, insecureSkipVerify bool) 
 
 var upgrader = websocket.Upgrader{}
 
-func (wp *WebSocketProxy) Forward(w http.ResponseWriter, r *http.Request) {
+func (wp *WebSocketProxy) Forward(w http.ResponseWriter, r *http.Request) error {
 	clientConn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Printf("WebSocket升级失败: %v", err)
-		return
+		return fmt.Errorf("WebSocket升级失败: %v", err)
 	}
 	defer clientConn.Close()
 
 	proxyURL, err := wp.Resolver.Resolve(*r.URL)
 	if err != nil {
-		log.Println(err)
-		return
+		return err
 	}
 	if proxyURL.Scheme == "https" {
 		proxyURL.Scheme = "wss"
@@ -48,8 +46,7 @@ func (wp *WebSocketProxy) Forward(w http.ResponseWriter, r *http.Request) {
 	}
 	targetConn, _, err := wp.Dialer.Dial(proxyURL.String(), r.Header)
 	if err != nil {
-		log.Printf("无法连接到WebSocket服务器: %v", err)
-		return
+		return fmt.Errorf("无法连接到WebSocket服务器: %v", err)
 	}
 	defer targetConn.Close()
 
@@ -57,6 +54,7 @@ func (wp *WebSocketProxy) Forward(w http.ResponseWriter, r *http.Request) {
 	go wp.copyData(clientConn, targetConn, errChan)
 	go wp.copyData(targetConn, clientConn, errChan)
 	<-errChan
+	return nil
 }
 
 func (wp *WebSocketProxy) copyData(src, dst *websocket.Conn, errChan chan error) {

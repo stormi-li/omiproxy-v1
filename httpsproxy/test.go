@@ -1,7 +1,11 @@
 package main
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/go-redis/redis/v8"
+	"github.com/stormi-li/omicert-v1"
 	"github.com/stormi-li/omiproxy-v1"
 )
 
@@ -13,5 +17,8 @@ func main() {
 	proxy := c.NewProxy("http8000", "118.25.196.166:8000")
 	// proxy.SetCache("cache", 100*1024*1024)
 	// &omicert.Credential{CertFile: "../../certs/stormili.crt", KeyFile: "../../certs/stormili.key"}
-	proxy.Start(1, nil)
+	proxy.SetFailCallback(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "hello")
+	})
+	proxy.Start(1, &omicert.Credential{CertFile: "../../certs/stormili.crt", KeyFile: "../../certs/stormili.key"})
 }

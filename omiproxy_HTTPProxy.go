@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/tls"
 	"io"
-	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -59,18 +58,17 @@ func (p *HTTPProxy) SetCache(cache *omicafe.FileCache) {
 	p.cache = cache
 }
 
-func (p *HTTPProxy) Forward(w http.ResponseWriter, r *http.Request) {
+func (p *HTTPProxy) Forward(w http.ResponseWriter, r *http.Request) error {
 	if p.cache != nil && r.Method == "GET" {
 		if data, _ := p.cache.Get(r.URL.String()); len(data) != 0 {
 			w.Write(data)
-			return
+			return nil
 		}
 	}
 	r.URL.Host = r.Host
 	targetURL, err := p.Resolver.Resolve(*r.URL)
 	if err != nil {
-		log.Println(err)
-		return
+		return err
 	}
 
 	if targetURL.Scheme == "" {
@@ -86,4 +84,5 @@ func (p *HTTPProxy) Forward(w http.ResponseWriter, r *http.Request) {
 	r.URL.Path = targetURL.Path
 	proxy.Transport = &CaptureResponseRoundTripper{Transport: p.Transport, cache: p.cache, url: r.URL}
 	proxy.ServeHTTP(w, r)
+	return nil
 }
