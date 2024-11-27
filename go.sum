@@ -20,10 +20,8 @@ github.com/stormi-li/omicert-v1 v1.0.0 h1:+Kj+bmavyKDNKYvgZLVxAA+ZVijJB9NpRAsrQc
 github.com/stormi-li/omicert-v1 v1.0.0/go.mod h1:gDRsndQa+Np73jXZZSKw26eCbquYYUFAn9RhGu8HMnU=
 github.com/stormi-li/omipc-v1 v1.0.6 h1:J8gQkpXTKqjTJOyNLi+3/qJ36Z3lAH5fm4edF+1n2pI=
 github.com/stormi-li/omipc-v1 v1.0.6/go.mod h1:ZAp6w8bM/PlfvetZH1OnT79baGIir/2jlHtmKYTHdpE=
-github.com/stormi-li/omiresolver-v1 v1.0.0 h1:NcUhlBTNXRjDFpy3w1+GML3Ki63fQ6o2rqHJMzLCnr8=
-github.com/stormi-li/omiresolver-v1 v1.0.0/go.mod h1:2vejwLzXmEwJGYnoeln/O5gdlzazAr5iIRW0P7WW8oo=
-github.com/stormi-li/omiserd-v1 v1.0.5 h1:vQ/jJs3lJsP1M4tZJtY8d8ChVsbYcpIg1cY/tXNK99w=
-github.com/stormi-li/omiserd-v1 v1.0.5/go.mod h1:X2uGc+Z0CD3HIeYeFdiDsDRfGZvpGahSOGsEZsaAY2Q=
+github.com/stormi-li/omiresolver-v1 v1.0.1 h1:23x2VjESCZbeAr6zmiP6JjPXiQjOGk9/CNi9rtze3Sw=
+github.com/stormi-li/omiresolver-v1 v1.0.1/go.mod h1:2vejwLzXmEwJGYnoeln/O5gdlzazAr5iIRW0P7WW8oo=
 github.com/stormi-li/omiserd-v1 v1.0.6 h1:gDoxJKjeS2oqabV5REAsijqv8fIgYiuAMBkSzWrOgk0=
 github.com/stormi-li/omiserd-v1 v1.0.6/go.mod h1:X2uGc+Z0CD3HIeYeFdiDsDRfGZvpGahSOGsEZsaAY2Q=
 golang.org/x/net v0.0.0-20210428140749-89ef3d95e781 h1:DzZ89McO9/gWPsQXS/FVKAlG02ZjaQ6AlZRBimEYOd0=
