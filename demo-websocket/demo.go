@@ -13,10 +13,10 @@ var redisAddr = "118.25.196.166:3934"
 var password = "12982397StrongPassw0rd"
 
 func main() {
-	client()
+	Client()
 }
 
-func client() {
+func Client() {
 	c, _, err := websocket.DefaultDialer.Dial("ws://118.25.196.166:8000/hello_websocket_server/hello", nil)
 	fmt.Println(err)
 	c.WriteMessage(1, []byte("lili"))
@@ -24,7 +24,7 @@ func client() {
 	fmt.Println(string(d))
 }
 
-func server() {
+func Server() {
 	register := omiserd.NewClient(&redis.Options{Addr: redisAddr, Password: password}, omiserd.Web).NewRegister("hello_websocket_server", "118.25.196.166:8082")
 	http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
 		upgrader := websocket.Upgrader{}

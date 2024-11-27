@@ -6,7 +6,7 @@ require github.com/go-redis/redis/v8 v8.11.5
 
 require (
 	github.com/stormi-li/omipc-v1 v1.0.6 // indirect
-	github.com/stormi-li/omiresolver-v1 v1.0.0 // indirect
+	github.com/stormi-li/omiresolver-v1 v1.0.0
 )
 
 require (
